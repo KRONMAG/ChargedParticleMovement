@@ -1,15 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using ChargedParticleMovement.Model;
 
 namespace ChargedParticleMovement.Console
 {
-    class Program
+    public static class Program
     {
-        static void Main(string[] args)
+        public static void Main()
         {
+            var trajectory = TrajectoryCalculator.Calculate(TrajectoryCalculatorArgs.GetArgs(ParticleType.Electron, TrajectoryType.Straight, false));
+            File.Create("out.csv").Close();
+            File.AppendAllText("out.csv", "X;Y;Z\n", Encoding.ASCII);
+            File.AppendAllLines("out.csv", trajectory.Select(vector => $"{vector.X};{vector.Y};{vector.Z}"));
         }
     }
 }
