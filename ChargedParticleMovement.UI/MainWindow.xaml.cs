@@ -1,60 +1,164 @@
 ﻿using System;
-using System.Linq;
-using Plotly;
-using ChargedParticleMovement.Model;
-using System.Collections.Generic;
-using Math;
+using System.Windows;
 using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
+using Math;
+using ChargedParticleMovement.Model;
+using static ChargedParticleMovement.Model.ParticleType;
+using static ChargedParticleMovement.Model.TrajectoryType;
+using System.ComponentModel;
+using Microsoft.Toolkit.Win32.UI.Controls.Interop.WinRT;
 
 namespace ChargedParticleMovement.UI
 {
+    /// <summary>
+    /// Окно работы с моделью движения заряженной частицы в магнитном поле
+    /// </summary>
     public partial class MainWindow : MetroWindow
     {
+        /// <summary>
+        /// Инициализация окна
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
-            var points = TrajectoryCalculator.Calculate
+            SetTrajectoryCalculatorArgs
             (
                 TrajectoryCalculatorArgs.GetArgs
                 (
-                    ParticleType.AlphaParticle,
-                    TrajectoryType.Spiral,
+                    AlphaParticle,
+                    Spiral,
                     false
                 )
             );
+        }
 
-            var chart = new Plot
+        /// <summary>
+        /// Обработчик события нажатия кнопки расчета траектории движения частицы
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Параметры события</param>
+        private void CalculateTrajectoryClicked(object sender, RoutedEventArgs e)
+        {
+            if (TryGetTrajectoryCalculatorArgs(out TrajectoryCalculatorArgs args))
+            {
+                var waitingAnimationWindow = new WaitingAnimationWindow();
+                waitingAnimationWindow.Owner = this;
+                IsEnabled = false;
+                waitingAnimationWindow.Message = "Расчет траектории";
+                waitingAnimationWindow.Show();
+                void StopAnimation(object _, WebViewControlDOMContentLoadedEventArgs __)
+                {
+                    TrajectoryWebView.DOMContentLoaded -= StopAnimation;
+                    IsEnabled = true;
+                    waitingAnimationWindow.Hide();
+                }
+                TrajectoryWebView.DOMContentLoaded += StopAnimation;
+
+                var worker = new BackgroundWorker();
+                worker.DoWork += (_, e) => e.Result = TrajectoryPlot.BuildPlot(args);
+                worker.RunWorkerCompleted += (_, e) => TrajectoryWebView.NavigateToLocal((string)e.Result);
+                worker.RunWorkerAsync();
+            }
+        }
+
+        /// <summary>
+        /// Обработчик нажатия кнопки генерации параметров модели
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Параметры события</param>
+        private void GenerateTrajectoryCalculatorArgsClicked(object sender, RoutedEventArgs e) =>
+            SetTrajectoryCalculatorArgs
             (
-                Plot.traces
+                TrajectoryCalculatorArgs.GetArgs
                 (
-                    Traces.scatter3d
-                    (
-                        Scatter3d.x(GetCoordinates(points, point => point.X)),
-                        Scatter3d.y(GetCoordinates(points, point => point.Y)),
-                        Scatter3d.z(GetCoordinates(points, point => point.Z)),
-                        Scatter3d.mode(Scatter3d.Mode.lines())
-                    )
-                ),
-                Plot.layout
-                (
-                    Layout.autosize(true),
-                    Layout.margin
-                    (
-                        Plotly.Margin.l(0),
-                        Plotly.Margin.t(0),
-                        Plotly.Margin.r(0),
-                        Plotly.Margin.b(0)
-                    )
+                    ParticleTypeComboBox.SelectedValue.ToString() switch
+                    {
+                        "Альфа-частица" => AlphaParticle,
+                        "Электрон" => Electron,
+                        "Протон" => Proton
+                    },
+                    TrajectoryTypeComboBox.SelectedValue.ToString() switch
+                    {
+                        "Прямая" => Straight,
+                        "Окружность" => Circle,
+                        "Спираль" => Spiral
+                    },
+                    UseRandomComboBox.SelectedValue.ToString() switch
+                    {
+                        "Да" => true,
+                        "Нет" => false
+                    }
                 )
             );
 
-            TrajectoryWebView.NavigateToString(chart.Render().ToString().Replace("width: 100%;", string.Empty));
+        /// <summary>
+        /// Попытка конструирования параметров модели на основе введенных значений
+        /// </summary>
+        /// <param name="args">Параметры модели, соответствующие введенным данным</param>
+        /// <returns>Истина, если введенные значения параметров корректны, иначе - ложь</returns>
+        private bool TryGetTrajectoryCalculatorArgs(out TrajectoryCalculatorArgs args)
+        {
+            try
+            {
+                args = new TrajectoryCalculatorArgs
+                (
+                    MNumericUpDown.Value.Value,
+                    QNumericUpDown.Value.Value,
+                    TNumericUpDown.Value.Value,
+                    (int)NNumericUpDown.Value.Value,
+                    new Vector3D
+                    (
+                        R0xNumericUpDown.Value.Value,
+                        R0yNumericUpDown.Value.Value,
+                        R0zNumericUpDown.Value.Value
+                    ),
+                    new Vector3D
+                    (
+                        V0xNumericUpDown.Value.Value,
+                        V0yNumericUpDown.Value.Value,
+                        V0zNumericUpDown.Value.Value
+                    ),
+                    new Vector3D
+                    (
+                        BxNumericUpDown.Value.Value,
+                        ByNumericUpDown.Value.Value,
+                        BzNumericUpDown.Value.Value
+                    )
+                );
+                return true;
+            }
+            catch (ArgumentException ex)
+            {
+                this.ShowModalMessageExternal("Ошибка", ex.Message);
+            }
+            catch (InvalidOperationException)
+            {
+                this.ShowModalMessageExternal("Ошибка", "Заданы значения не для всех параметров модели");
+            }
+            args = null;
+            return false;
         }
 
-        private float[] GetCoordinates(List<Vector3D> points, Func<Vector3D, double> selector) =>
-            points
-                .AsParallel()
-                .Select(point => (float)selector(point))
-                .ToArray();
+        /// <summary>
+        /// Установка значений полей ввода на основе параметров модели
+        /// </summary>
+        /// <param name="args">Параметры модели</param>
+        private void SetTrajectoryCalculatorArgs(TrajectoryCalculatorArgs args)
+        {
+            MNumericUpDown.Value = args.M;
+            QNumericUpDown.Value = args.Q;
+            R0xNumericUpDown.Value = args.R0.X;
+            R0yNumericUpDown.Value = args.R0.Y;
+            R0zNumericUpDown.Value = args.R0.Z;
+            V0xNumericUpDown.Value = args.V0.X;
+            V0yNumericUpDown.Value = args.V0.Y;
+            V0zNumericUpDown.Value = args.V0.Z;
+            BxNumericUpDown.Value = args.B.X;
+            ByNumericUpDown.Value = args.B.Y;
+            BzNumericUpDown.Value = args.B.Z;
+            TNumericUpDown.Value = args.T;
+            NNumericUpDown.Value = args.N;
+        }
     }
 }

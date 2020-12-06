@@ -4,8 +4,16 @@ using Math;
 
 namespace ChargedParticleMovement.Model
 {
+    /// <summary>
+    /// Моделирование движения заряженной частицы в магнитном поле
+    /// </summary>
     public static class TrajectoryCalculator
     {
+        /// <summary>
+        /// Расчет траектории движения заряженной частицы в магнитном поле
+        /// </summary>
+        /// <param name="args">Параметры модели</param>
+        /// <returns>Траектория движения частицы</returns>
         public static List<Vector3D> Calculate(TrajectoryCalculatorArgs args)
         {
             Requires.NotNull(args, nameof(args), "Не заданы параметры движения частицы");

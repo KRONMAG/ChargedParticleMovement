@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChargedParticleMovement.UI"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChargedParticleMovement.Model", "ChargedParticleMovement.Model\ChargedParticleMovement.Model.csproj", "{646BC1EC-73E6-4904-8E9C-136132AB557B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChargedParticleMovement.Console", "ChargedParticleMovement.Console\ChargedParticleMovement.Console.csproj", "{A96F6737-BA9D-451D-8B92-91CAF75819C5}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{646BC1EC-73E6-4904-8E9C-136132AB557B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{646BC1EC-73E6-4904-8E9C-136132AB557B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{646BC1EC-73E6-4904-8E9C-136132AB557B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A96F6737-BA9D-451D-8B92-91CAF75819C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A96F6737-BA9D-451D-8B92-91CAF75819C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A96F6737-BA9D-451D-8B92-91CAF75819C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A96F6737-BA9D-451D-8B92-91CAF75819C5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
