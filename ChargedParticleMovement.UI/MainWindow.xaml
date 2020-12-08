@@ -28,7 +28,6 @@
                     <Style x:Key="NumericUpDownStyle" TargetType="mahapps:NumericUpDown">
                         <Setter Property="Width" Value="120" />
                         <Setter Property="Value" Value="0" />
-                        <Setter Property="ParsingNumberStyle" Value="AllowExponent" />
                     </Style>
                 </StackPanel.Resources>
                 <Label Content="Задание параметров" FontWeight="Bold" />

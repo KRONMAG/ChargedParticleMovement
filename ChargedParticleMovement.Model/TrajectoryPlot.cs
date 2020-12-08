@@ -37,10 +37,14 @@ namespace ChargedParticleMovement.Model
                     Layout.autosize(true),
                     Layout.margin
                     (
-                        Plotly.Margin.l(0),
-                        Plotly.Margin.t(0),
-                        Plotly.Margin.r(0),
-                        Plotly.Margin.b(0)
+                        Margin.l(0),
+                        Margin.t(0),
+                        Margin.r(0),
+                        Margin.b(0)
+                    ),
+                    Layout.scene
+                    (
+                        Scene.Aspectmode.data()
                     )
                 )
             );
